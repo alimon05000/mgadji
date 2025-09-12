@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эксплуатация ГТС ГЭС | Интерактивная презентация</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a2a43 0%, #163a5f 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+        
+        .slides {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        
+        .slide {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            left: 10%;
+            top: 10%;
+            padding: 40px;
+            background: rgba(13, 40, 66, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            transform: translateZ(-500px) rotateY(90deg);
+            opacity: 0;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), 
+                        opacity 0.8s ease,
+                        box-shadow 0.8s ease;
+            overflow: auto;
+        }
+        
+        .slide.active {
+            transform: translateZ(0) rotateY(0);
+            opacity: 1;
+            z-index: 10;
+            box-shadow: 0 15px 35px rgba(0, 128, 255, 0.3);
+        }
+        
+        .slide.next {
+            transform: translateZ(-200px) rotateY(-30deg);
+            opacity: 0.6;
+            z-index: 5;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .slide.prev {
+            transform: translateZ(-200px) rotateY(30deg);
+            opacity: 0.6;
+            z-index: 5;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 5px 15px rgba(0, 128, 255, 0.5);
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        
+        h2 {
+            font-size: 2.2em;
+            margin: 25px 0 15px;
+            color: #4facfe;
+        }
+        
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        ul {
+            padding-left: 30px;
+            margin-bottom: 25px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        button {
+            background: rgba(13, 40, 66, 0.8);
+            color: #4facfe;
+            border: 2px solid #4facfe;
+            padding: 15px 30px;
+            margin: 0 15px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: #4facfe;
+            color: #0a2a43;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #4facfe;
+            z-index: 100;
+            background: rgba(13, 40, 66, 0.8);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .water-animation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(transparent, rgba(0, 142, 255, 0.5));
+            z-index: -1;
+            animation: wave 10s infinite linear;
+        }
+        
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1000px; }
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(79, 172, 254, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-20px) translateX(15px); }
+            50% { transform: translateY(-35px) translateX(-15px); }
+            75% { transform: translateY(-15px) translateX(10px); }
+        }
+        
+        .highlight {
+            color: #00f2fe;
+            font-weight: 600;
+        }
+        
+        .scheme {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scheme::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, rgba(79, 172, 254, 0.2), transparent);
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .turbine {
+            width: 120px;
+            height: 120px;
+            border: 5px solid #4facfe;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 10s infinite linear;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .turbine::before, .turbine::after {
+            content: "";
+            position: absolute;
+            width: 80%;
+            height: 5px;
+            background: #4facfe;
+            top: 50%;
+            left: 10%;
+        }
+        
+        .turbine::after {
+            transform: rotate(45deg);
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 5px solid #4facfe;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 1.8em; }
+            p, li { font-size: 1em; }
+            .slide { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="slides">
+            <!-- Слайд 1 -->
+            <div class="slide active">
+                <h1>Эксплуатация Гидротехнических Сооружений ГЭС</h1>
+                <div class="scheme">
+                    <div class="turbine"></div>
+                </div>
+                <p>Современное руководство по безопасной и эффективной эксплуатации гидротехнических сооружений гидроэлектростанций.</p>
+                <div class="info-box">
+                    <p>Гидротехнические сооружения (ГТС) — это инженерные сооружения, предназначенные для использования водных ресурсов, а также для борьбы с вредным воздействием вод.</p>
+                </div>
+            </div>
+            
+            <!-- Слайд 2 -->
+            <div class="slide">
+                <h1>Основные принципы эксплуатации</h1>
+                <h2>Ключевые аспекты работы с ГТС</h2>
+                <ul>
+                    <li><span class="highlight">Безопасность</span> - приоритет при эксплуатации любых гидротехнических сооружений</li>
+                    <li><span class="highlight">Постоянный мониторинг</span> - контроль состояния сооружений и оборудования</li>
+                    <li><span class="highlight">Плановое обслуживание</span> - регулярные проверки и ремонтные работы</li>
+                    <li><span class="highlight">Документирование</span> - фиксация всех параметров работы и мероприятий</li>
+                </ul>
+                <div class="info-box">
+                    <p>Эксплуатация ГТС должна осуществляться в строгом соответствии с проектной документацией и нормативными требованиями.</p>
+                </div>
+            </div>
+            
+            <!-- Слайд 3 -->
+            <div class="slide">
+                <h1>Контроль и мониторинг</h1>
+                <h2>Критические параметры для наблюдения</h2>
+                <ul>
+                    <li>Уровни воды в верхнем и нижнем бьефах</li>
+                    <li>Деформации и осадки сооружений</li>
+                    <li>Фильтрационные расходы и уровни пьезометрического давления</li>
+                    <li>Температурные режимы бетонных и железобетонных конструкций</li>
+                    <li>Напряженно-деформированное состояние конструкций</li>
+                </ul>
+                <div class="info-box">
+                    <p>Автоматизированные системы мониторинга позволяют в реальном времени отслеживать состояние ГТС и оперативно реагировать на изменения.</p>
+                </div>
+            </div>
+            
+            <!-- Слайд 4 -->
+            <div class="slide">
+                <h1>Техническое обслуживание</h1>
+                <h2>Плановые мероприятия</h2>
+                <ul>
+                    <li>Ежедневный осмотр сооружений</li>
+                    <li>Ежемесячное техническое обслуживание механического оборудования</li>
+                    <li>Ежеквартальная проверка измерительных приборов и датчиков</li>
+                    <li>Ежегодное комплексное обследование с привлечением экспертов</li>
+                    <li>Капитальный ремонт согласно графику (каждые 5-10 лет)</li>
+                </ul>
+                <div class="info-box">
+                    <p>График технического обслуживания должен строго соблюдаться, а все выполненные работы — подробно документироваться.</p>
+                </div>
+            </div>
+            
+            <!-- Слайд 5 -->
+            <div class="slide">
+                <h1>Действия в аварийных ситуациях</h1>
+                <h2>Протоколы безопасности</h2>
+                <ul>
+                    <li>Немедленное оповещение ответственного персонала при обнаружении неисправностей</li>
+                    <li>Приведение сооружений в безопасное состояние согласно инструкциям</li>
+                    <li>Эвакуация персонала при возникновении угрозы разрушения</li>
+                    <li>Взаимодействие с emergency-службами и местными властями</li>
+                    <li>Документирование всех событий и принятых мер</li>
+                </ul>
+                <div class="info-box">
+                    <p>Все сотрудники должны быть ознакомлены с планом действий в аварийных ситуациях и проходить регулярные тренировки.</p>
+                </div>
+            </div>
+            
+            <!-- Слайд 6 -->
+            <div class="slide">
+                <h1>Заключение</h1>
+                <h2>Ответственность за безопасную эксплуатацию</h2>
+                <p>Эксплуатация ГТС ГЭС требует высочайшего уровня профессионализма, ответственности и строгого соблюдения всех нормативов и инструкций.</p>
+                <div class="info-box">
+                    <p>Регулярное обучение персонала, модернизация оборудования и внедрение современных технологий мониторинга — залог безопасной и эффективной эксплуатации гидротехнических сооружений.</p>
+                </div>
+                <p>Безопасность людей и защита окружающей среды — наивысший приоритет при работе с ГТС.</p>
+            </div>
+        </div>
+        
+        <div class="water-animation"></div>
+        <div class="particles" id="particles"></div>
+        
+        <div class="controls">
+            <button id="prev">Назад</button>
+            <button id="next">Вперед</button>
+        </div>
+        
+        <div class="slide-counter">
+            Слайд <span id="current">1</span> из <span id="total">6</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev');
+            const nextBtn = document.getElementById('next');
+            const currentSlide = document.getElementById('current');
+            const totalSlides = document.getElementById('total');
+            const particlesContainer = document.getElementById('particles');
+            
+            let currentIndex = 0;
+            totalSlides.textContent = slides.length;
+            
+            // Создание частиц для фона
+            function createParticles() {
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    const size = Math.random() * 10 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    particle.style.animationDelay = `${Math.random() * 15}s`;
+                    
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            createParticles();
+            
+            // Обновление слайдов
+            function updateSlides() {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active', 'next', 'prev');
+                    
+                    if (index === currentIndex) {
+                        slide.classList.add('active');
+                    } else if (index === currentIndex + 1) {
+                        slide.classList.add('next');
+                    } else if (index === currentIndex - 1) {
+                        slide.classList.add('prev');
+                    }
+                });
+                
+                currentSlide.textContent = currentIndex + 1;
+                
+                // Блокировка кнопок в крайних положениях
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex === slides.length - 1;
+            }
+            
+            // Навигация
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < slides.length - 1) {
+                    currentIndex++;
+                    updateSlides();
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateSlides();
+                }
+            });
+            
+            // Навигация клавиатурой
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') {
+                    nextBtn.click();
+                } else if (e.key === 'ArrowLeft') {
+                    prevBtn.click();
+                }
+            });
+            
+            // Инициализация
+            updateSlides();
+        });
+    </script>
+</body>
+</html>
